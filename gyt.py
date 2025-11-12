@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # Load the trained model
-model_filename = 'logistic_regression_model'
+model_filename = 'logistic_regression_model.pkl'
 loaded_model = joblib.load(open(model_filename, 'rb'))
 
 # Page configuration
@@ -62,4 +62,5 @@ if st.button("💪 Predict Performance"):
 # Footer
 st.divider()
 st.caption("Developed with ❤️ using Streamlit")
+
 
