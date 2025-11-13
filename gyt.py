@@ -3,29 +3,38 @@ import pandas as pd
 import joblib
 import pickle
 
-# Load the trained model safely
+# ------------------------------------------------------
+# 🧠 Safe Model Loading
+# ------------------------------------------------------
 model_filename = 'logistic_regression_model.pkl'
 
 try:
+    # Try loading with joblib
     loaded_model = joblib.load(open(model_filename, 'rb'))
 except Exception as e:
-    st.error(f"⚠️ Error loading model: {e}")
-    st.stop()
+    st.warning(f"⚠️ joblib load failed due to: {e}")
+    st.info("Trying to load with pickle instead...")
+    try:
+        with open(model_filename, 'rb') as f:
+            loaded_model = pickle.load(f)
+    except Exception as e2:
+        st.error(f"❌ Unable to load model. Error: {e2}")
+        st.stop()
 
-
-# Page configuration
+# ------------------------------------------------------
+# 📊 Display model info
+# ------------------------------------------------------
 st.set_page_config(page_title="🏋️‍♂️ Gym Performance Predictor", page_icon="💪", layout="centered")
-
-# Title and description
 st.title("🏋️‍♀️ Gym Member Exercise Performance Prediction")
 st.markdown("""
 Welcome to the **Gym Performance Prediction App**!  
 Enter your workout details below to get a prediction of your **performance score** or **calories burned**.
 """)
-
 st.divider()
 
-# Collect user inputs with organized layout
+# ------------------------------------------------------
+# 🧍 Collect User Inputs
+# ------------------------------------------------------
 col1, col2 = st.columns(2)
 
 with col1:
@@ -42,7 +51,9 @@ with col2:
     Water_Intake = st.number_input("💧 Water Intake (liters)", min_value=0.0, max_value=5.0, value=1.5)
     Sleep_Hours = st.number_input("🛏️ Sleep Hours (last night)", min_value=0.0, max_value=12.0, value=7.0)
 
-# Data preparation
+# ------------------------------------------------------
+# 🧩 Data Preparation
+# ------------------------------------------------------
 input_dict = {
     'Age': Age,
     'Gender': 1 if Gender == 'Male' else (0 if Gender == 'Female' else 2),
@@ -58,18 +69,38 @@ input_dict = {
 
 input_df = pd.DataFrame([input_dict])
 
-# Prediction
+# ------------------------------------------------------
+# 🧾 Show Expected vs Input Features
+# ------------------------------------------------------
+expected_features = getattr(loaded_model, 'feature_names_in_', None)
+if expected_features is not None:
+    st.info(f"✅ Model expects {len(expected_features)} features: {list(expected_features)}")
+    st.write("📥 Your Input Data:", input_df)
+else:
+    st.warning("⚠️ Model feature names not found. Proceeding with raw input.")
+
+# ------------------------------------------------------
+# 🔮 Prediction
+# ------------------------------------------------------
 st.divider()
 if st.button("💪 Predict Performance"):
-    prediction = loaded_model.predict(input_df)
-    st.success(f"🏆 **Predicted Performance Score:** {round(prediction[0], 2)}")
-    st.balloons()
-    st.markdown("Keep training hard and maintain consistency! 💥")
+    try:
+        prediction = loaded_model.predict(input_df)
+        st.success(f"🏆 **Predicted Performance Score:** {round(prediction[0], 2)}")
+        st.balloons()
+        st.markdown("Keep training hard and maintain consistency! 💥")
+    except ValueError as e:
+        st.error(f"⚠️ Input mismatch error: {e}")
+        if expected_features is not None:
+            st.write("Expected features:", list(expected_features))
+            st.write("Input features:", list(input_df.columns))
+        st.stop()
+    except Exception as e:
+        st.error(f"❌ Unexpected error during prediction: {e}")
+        st.stop()
 
-# Footer
+# ------------------------------------------------------
+# ❤️ Footer
+# ------------------------------------------------------
 st.divider()
 st.caption("Developed with ❤️ using Streamlit")
-
-
-
-
