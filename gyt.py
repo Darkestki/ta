@@ -3,11 +3,15 @@ import pandas as pd
 import joblib
 import pickle
 
-model = joblib.load("logistic_regression_model.pkl")
+# Load the trained model safely
+model_filename = 'logistic_regression_model.pkl'
 
-# Save in a fully compatible pickle format
-with open("logistic_regression_model_v2.pkl", "wb") as f:
-    pickle.dump(model, f)
+try:
+    loaded_model = joblib.load(open(model_filename, 'rb'))
+except Exception as e:
+    st.error(f"⚠️ Error loading model: {e}")
+    st.stop()
+
 
 # Page configuration
 st.set_page_config(page_title="🏋️‍♂️ Gym Performance Predictor", page_icon="💪", layout="centered")
@@ -65,6 +69,7 @@ if st.button("💪 Predict Performance"):
 # Footer
 st.divider()
 st.caption("Developed with ❤️ using Streamlit")
+
 
 
 
