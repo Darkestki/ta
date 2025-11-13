@@ -1,27 +1,28 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import pickle
 import numpy as np
+import pickle
 
 # ------------------------------------------------------
-# 🧠 Load model safely
+# 🧠 Load regression model + scaler
 # ------------------------------------------------------
 model_filename = "calorie_svr_model.pkl"
+scaler_filename = "scaler.pkl"
+
 try:
     loaded_model = joblib.load(open(model_filename, "rb"))
-except Exception:
-    with open(model_filename, "rb") as f:
-        loaded_model = pickle.load(f)
+    scaler = joblib.load(open(scaler_filename, "rb"))
+except Exception as e:
+    st.error(f"Error loading model/scaler: {e}")
 
 # ------------------------------------------------------
 # ⚙️ Page Setup
 # ------------------------------------------------------
-st.set_page_config(page_title="🔥 Gym Performance Predictor", page_icon="🏋️‍♂️", layout="centered")
-st.title("🏋️‍♀️ Gym Member Performance Prediction")
+st.set_page_config(page_title="🔥 Gym Calorie Predictor", page_icon="🏋️‍♂️", layout="centered")
+st.title("🏋️‍♀️ Gym Member Calorie Burn Prediction")
 st.markdown("""
-Welcome to the **Gym Performance Prediction App**!  
-Enter your details to estimate your **performance level** or **fitness category**.
+Enter your workout details below to get an **estimated calorie burn**.
 """)
 st.divider()
 
@@ -77,10 +78,11 @@ input_df = pd.DataFrame([input_dict])
 # 🔍 Prediction Section
 # ------------------------------------------------------
 st.divider()
-if st.button("🔥 Predict Performance Category"):
+if st.button("🔥 Predict Calories Burned"):
     try:
-        prediction = loaded_model.predict(input_df)
-        st.success(f"🏆 **Predicted Performance Category:** {prediction[0]}")
+        scaled_input = scaler.transform(input_df)
+        prediction = loaded_model.predict(scaled_input)
+        st.success(f"🔥 **Predicted Calories Burned:** {round(float(prediction[0]), 2)} kcal")
         st.balloons()
         st.markdown("Keep pushing your limits! 💪")
     except Exception as e:
@@ -90,5 +92,8 @@ if st.button("🔥 Predict Performance Category"):
             st.write("Expected features:", list(expected))
         st.write("Input features:", list(input_df.columns))
 
+# ------------------------------------------------------
+# ❤️ Footer
+# ------------------------------------------------------
 st.divider()
 st.caption("Developed with ❤️ using Streamlit")
