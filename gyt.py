@@ -5,10 +5,9 @@ import pickle
 import numpy as np
 
 # ------------------------------------------------------
-# 🧠 Load SVC model safely
+# 🧠 Load model safely
 # ------------------------------------------------------
-model_filename = "svc_model.pkl"
-
+model_filename = "calorie_svr_model.pkl"
 try:
     loaded_model = joblib.load(open(model_filename, "rb"))
 except Exception:
@@ -18,11 +17,11 @@ except Exception:
 # ------------------------------------------------------
 # ⚙️ Page Setup
 # ------------------------------------------------------
-st.set_page_config(page_title="🔥 Gym Calorie Predictor", page_icon="🏋️‍♂️", layout="centered")
-st.title("🏋️‍♀️ Gym Member Calorie Burn / Performance Prediction")
+st.set_page_config(page_title="🔥 Gym Performance Predictor", page_icon="🏋️‍♂️", layout="centered")
+st.title("🏋️‍♀️ Gym Member Performance Prediction")
 st.markdown("""
-Welcome to the **Gym Calorie Prediction App**!  
-Enter your fitness data to estimate your **calories burned** or **performance category**.
+Welcome to the **Gym Performance Prediction App**!  
+Enter your details to estimate your **performance level** or **fitness category**.
 """)
 st.divider()
 
@@ -78,19 +77,12 @@ input_df = pd.DataFrame([input_dict])
 # 🔍 Prediction Section
 # ------------------------------------------------------
 st.divider()
-if st.button("🔥 Predict Calories / Performance"):
+if st.button("🔥 Predict Performance Category"):
     try:
         prediction = loaded_model.predict(input_df)
-
-        # Determine output type
-        if np.issubdtype(type(prediction[0]), np.number):
-            st.success(f"🔥 **Predicted Calories Burned:** {round(float(prediction[0]), 2)} kcal")
-        else:
-            st.success(f"🏆 **Predicted Performance Category:** {prediction[0]}")
-
+        st.success(f"🏆 **Predicted Performance Category:** {prediction[0]}")
         st.balloons()
         st.markdown("Keep pushing your limits! 💪")
-
     except Exception as e:
         st.error(f"⚠️ Error during prediction: {e}")
         expected = getattr(loaded_model, 'feature_names_in_', None)
@@ -98,8 +90,5 @@ if st.button("🔥 Predict Calories / Performance"):
             st.write("Expected features:", list(expected))
         st.write("Input features:", list(input_df.columns))
 
-# ------------------------------------------------------
-# ❤️ Footer
-# ------------------------------------------------------
 st.divider()
 st.caption("Developed with ❤️ using Streamlit")
